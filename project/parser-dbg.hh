@@ -65,7 +65,7 @@ extern int yydebug;
     PROCEDURE = 258,               /* PROCEDURE  */
     IS = 259,                      /* IS  */
     VAR = 260,                     /* VAR  */
-    SPECIAL_BEGIN_BECAUSE_STUPID_FLEX_GENERATES_USELESS_MACRO = 261, /* SPECIAL_BEGIN_BECAUSE_STUPID_FLEX_GENERATES_USELESS_MACRO  */
+    t_BEGIN = 261,                 /* t_BEGIN  */
     END = 262,                     /* END  */
     PROGRAM = 263,                 /* PROGRAM  */
     IF = 264,                      /* IF  */

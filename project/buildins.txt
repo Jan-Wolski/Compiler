@@ -1,0 +1,71 @@
+a <= b
+LOAD a
+SUB b
+JPOS to else
+
+a >= b
+LOAD b
+SUB a
+JPOS to else
+
+a = b
+LOAD a
+SUB b
+JPOS to else
+LOAD b
+SUB a
+JPOS to else
+
+a != b
+LOAD a
+SUB b
+JPOS to if
+LOAD b
+SUB a
+JPOS to if
+JUMP else
+LABEL if
+
+a > b
+LOAD a
+SUB b
+JZERO to else
+
+a < b
+LOAD b
+SUB a
+JZERO to else
+
+CALL:
+for args
+	SET offset
+	STORE offset place
+SET returnPos
+STORE returnPos
+JUMP function location
+
+ADD,SUB
+
+a MUL b = c
+LOAD 0
+STORE a
+LOAD 1
+STORE b
+LOAD b #LOAD
+SUB 1
+HALF
+STORE d
+LOAD b
+HALF
+JZERO #END
+SUB d
+JZERO #JUSTA
+LOAD a
+ADD c
+STORE c
+LOAD a #JUSTA
+ADD a/0 
+STORE a
+JUMP #LOAD
+ end
+

@@ -28,8 +28,6 @@
   char* text; 
 }
 %parse-param {Program& program }
-%left '-' '+'
-%left '*' '/' '%'
 %token PROCEDURE
 %token IS
 %token VAR
@@ -63,15 +61,15 @@ procedures : procedures PROCEDURE proc_head IS VAR declarations t_BEGIN commands
 main : PROGRAM IS VAR declarations t_BEGIN commands END {program.def_main();}
 | PROGRAM IS t_BEGIN commands END                       {program.def_main();}
 
-commands : commands command
+commands : commands command          {program.new_seq();}
 | command                            {program.new_commands();}
 
-command : ID ASSIGN expression ';'                        {program.set_val($1);}
-| IF condition THEN commands ELSE commands ENDIF  {program.if_else(true);}
-| IF condition THEN commands ENDIF                {program.if_else(false);}
-| WHILE condition DO commands ENDWHILE            {program.loop_while();}
-| REPEAT commands UNTIL condition ';'                 {program.loop_until();}
-| load_proc_head ';'                                       {program.load_procedure();}
+command : ID ASSIGN expression ';'                        {program.set_val($1);free($1);}
+| IF condition THEN commands ELSE commands ENDIF  {program.control(Ctrl::IFELSE);}
+| IF condition THEN commands ENDIF                {program.control(Ctrl::IF);}
+| WHILE condition DO commands ENDWHILE            {program.control(Ctrl::WHILE);}
+| REPEAT commands UNTIL condition ';'                 {program.control(Ctrl::UNTIL);}
+| load_proc_head ';'                                       {;}
 | READ ID ';'                                         {program.read($2);free($2);}
 | WRITE value ';'                                     {program.write();}
 
@@ -103,7 +101,7 @@ value : NUM		{program.value($1);}
 
 void yyerror( Program & program, char const* errname)
 {
-  std::cerr << std::endl << errname << " at line " << yylineno << std::endl;
+  std::cerr << std::endl << errname << " w lini " << yylineno << std::endl;
   exit(-1);
 }
 

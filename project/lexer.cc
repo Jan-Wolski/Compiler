@@ -913,7 +913,7 @@ YY_RULE_SETUP
 case 18:
 YY_RULE_SETUP
 #line 26 "lexer.l"
-{return SPECIAL_BEGIN_BECAUSE_STUPID_FLEX_GENERATES_USELESS_MACRO;}
+{return t_BEGIN;}
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
@@ -943,27 +943,27 @@ YY_RULE_SETUP
 case 24:
 YY_RULE_SETUP
 #line 33 "lexer.l"
-{ yylval.op = ADD;    return OP; }
+{ return '+'; }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
 #line 34 "lexer.l"
-{ yylval.op = SUB;    return OP; }
+{ return '-'; }
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
 #line 35 "lexer.l"
-{ yylval.op = MUL;    return OP; }
+{ return '*'; }
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
 #line 36 "lexer.l"
-{ yylval.op = DIV;    return OP; }
+{ return '/'; }
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
 #line 37 "lexer.l"
-{ yylval.op = REM;    return OP; }
+{ return '%'; }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP

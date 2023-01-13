@@ -6,12 +6,16 @@ all: kompilator
 debug: kompilator-dbg
 
 kompilator: FLAGS += -O3
-kompilator: lexer.o parser.o main.o
+kompilator: lexer.o parser.o main.o Program.h
 	$(CXX) $^ -o $@
 
 kompilator-dbg: FLAGS += -g -DDEBUG
 kompilator-dbg: lexer-dbg.o parser-dbg.o main.o
 	$(CXX) $^ -o $@
+
+
+%.o: %.cpp
+	$(CXX) $(FLAGS) -c $^
 
 %.o: %.cc
 	$(CXX) $(FLAGS) -c $^
