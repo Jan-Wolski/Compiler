@@ -84,74 +84,168 @@ class Program{
 		stack<Inst_list> inst_stack;
 		long long last_var_field=first_var;
 		queue<Value> current_values; //value/reference , is reference
+		stack<Value> comp_values; //value/reference , is reference
 
 		int param_num=0;
 		Operators last_op = NOP;
-		Comparisons last_comp = NO;
+		stack<Comparisons> comp_stack;
+		// Comparisons last_comp = NO;
 
-		void mul(){
-			int load = new_label();
-			int end = new_label();
-			int justa = new_label();
-			int last_add = new_label();
+	void mul(){
+		int load = new_label();
+		int end = new_label();
+		int justa = new_label();
+		int last_add = new_label();
 
-			long long inA = first_var;
-			long long inB = first_var+1;
-			long long posC = first_var+2;
-			long long posA = first_var+3;
-			long long posB = first_var+4;
-			long long posD = first_var+5;
+		long long inA = first_var;
+		long long inB = first_var+1;
+		long long posC = first_var+2;
+		long long posA = first_var+3;
+		long long posB = first_var+4;
+		long long posD = first_var+5;
 
-			Inst_list instrs = {
-				{Inst::SET,0},
-				{Inst::STORE,posC}, 
-				{Inst::LOAD,inA},
-				{Inst::JZERO,end},
-				{Inst::STORE,posA},
-				{Inst::LOAD,inB},
-				{Inst::JZERO,end},
-				{Inst::STORE,posB},
-				{Inst::LABEL,load},
-				{Inst::LOAD,posB},
-				{Inst::SUB,one_reg},
-				{Inst::JZERO,last_add},
-				{Inst::HALF,1},
-				{Inst::STORE,posD},
-				{Inst::LOAD,posB},
-				{Inst::HALF,1},
-				{Inst::JZERO,end},
-				{Inst::STORE,posB},
-				{Inst::SUB,posD},
-				{Inst::JPOS,justa},
-				{Inst::LOAD,posA},
-				{Inst::ADD,posC},
-				{Inst::STORE,posC},
-				{Inst::LABEL,justa},
-				{Inst::LOAD,posA},
-				{Inst::ADD,posA}, 
-				{Inst::STORE,posA},
-				{Inst::JUMP,load},
-				{Inst::LABEL,last_add},
-				{Inst::LOAD,posA},
-				{Inst::ADD,posC},
-				{Inst::STORE,posC},
-				{Inst::LABEL,end}
-			};
-			last_insts = instrs;
-			name_procedure("*");
-			reference("x");
-			reference("y");
-			reference("z");
-			var("a");
-			var("b");
-			var("d");
-			def_procedure();
+		Inst_list instrs = {
+			{Inst::SET,0},
+			{Inst::STORE,posC}, 
+			{Inst::LOAD,inA},
+			{Inst::JZERO,end},
+			{Inst::STORE,posA},
+			{Inst::LOAD,inB},
+			{Inst::JZERO,end},
+			{Inst::STORE,posB},
+			{Inst::LABEL,load},
+			{Inst::LOAD,posB},
+			{Inst::SUB,one_reg},
+			{Inst::JZERO,last_add},
+			{Inst::HALF,1},
+			{Inst::STORE,posD},
+			{Inst::LOAD,posB},
+			{Inst::HALF,1},
+			{Inst::JZERO,end},
+			{Inst::STORE,posB},
+			{Inst::SUB,posD},
+			{Inst::JPOS,justa},
+			{Inst::LOAD,posA},
+			{Inst::ADD,posC},
+			{Inst::STORE,posC},
+			{Inst::LABEL,justa},
+			{Inst::LOAD,posA},
+			{Inst::ADD,posA}, 
+			{Inst::STORE,posA},
+			{Inst::JUMP,load},
+			{Inst::LABEL,last_add},
+			{Inst::LOAD,posA},
+			{Inst::ADD,posC},
+			{Inst::STORE,posC},
+			{Inst::LABEL,end}
+		};
+		last_insts = instrs;
+		name_procedure("*");
+		reference("x");
+		reference("y");
+		reference("z");
+		var("a");
+		var("b");
+		var("d");
+		def_procedure();
 
-		}
+	}
 
+	void div(){
+		int DIV0a = new_label();
+		int DIV0b = new_label();
+		int LSHLOOP = new_label();
+		int LSHDONE = new_label();
+		int EZCASE = new_label();
+		int LOOPLOOP = new_label();
+		int endif = new_label();
+		int FINISHED = new_label();
+
+		long long inA = first_var;
+		long long inB = first_var+1;
+		long long A = first_var+2;
+		long long D = first_var+3;
+		long long B = first_var+4;
+		long long C = first_var+5;
+		
+
+
+		Inst_list instrs={
+			{Inst::LOAD, inA},
+			{Inst::JZERO, DIV0a},
+			{Inst::STORE, A},
+			{Inst::LOAD, inB},
+			{Inst::JZERO, DIV0b},
+			{Inst::STORE, B},
+			{Inst::SET, 0},
+			{Inst::STORE, C},
+			{Inst::LABEL, LSHLOOP},
+			{Inst::LOAD, B},
+			{Inst::SUB, A},
+			{Inst::JPOS, LSHDONE},
+			{Inst::LOAD, B},
+			{Inst::ADD, 0},
+			{Inst::STORE, B},
+			{Inst::LOAD, C},
+			{Inst::ADD, one_reg},
+			{Inst::STORE, C},
+			{Inst::JUMP, LSHLOOP},
+			{Inst::LABEL, LSHDONE},
+			{Inst::LOAD, C},
+			{Inst::JZERO, EZCASE},
+			{Inst::SET, 0},
+			{Inst::STORE, D},
+			{Inst::LABEL, LOOPLOOP},
+			{Inst::LOAD, B},
+			{Inst::HALF, B},
+			{Inst::STORE, B},
+			{Inst::LOAD, C},
+			{Inst::SUB, one_reg},
+			{Inst::STORE, C},
+			{Inst::LOAD, D},
+			{Inst::ADD, 0},
+			{Inst::STORE, D},
+			{Inst::LOAD, B},
+			{Inst::SUB, A},
+			{Inst::JPOS, endif},
+			{Inst::LOAD, A},
+			{Inst::SUB, B},
+			{Inst::STORE, A},
+			{Inst::LOAD, D},
+			{Inst::ADD, one_reg},
+			{Inst::STORE, D},
+			{Inst::LABEL, endif},
+			{Inst::LOAD, C},
+			{Inst::JZERO, FINISHED},
+			{Inst::JUMP, LOOPLOOP},
+			{Inst::LABEL, DIV0b},
+			{Inst::SET, 0},
+			{Inst::STORE, A},
+			{Inst::LABEL, DIV0a},
+			{Inst::LABEL, EZCASE},
+			{Inst::SET, 0},
+			{Inst::STORE, D},
+			{Inst::LABEL, FINISHED}
+			// {Inst::LOAD, D},
+			// {Inst::STORE, outQuot},
+			// {Inst::LOAD, A},
+			// {Inst::STORE, outRest}
+		};
+		last_insts = instrs;
+		name_procedure("/");
+		reference("x");
+		reference("y");
+		reference("r");
+		reference("q");	
+		var("b");
+		var("c");
+		def_procedure();
+
+	}
 
 		Program(){
 			mul();
+			div();
 		}
 		
 		int new_label(){
@@ -238,6 +332,7 @@ class Program{
 					case SUB:
 						if(first.is_ref){
 							if(second.is_ref){
+								current_insts.push_back(Cell{Inst::LOAD,first.val});
 								pos = second.val;
 							}else{
 								if(oper == SUB){
@@ -269,6 +364,7 @@ class Program{
 						}else{			
 							current_insts.push_back(Cell{Inst::SUB,pos});
 						}
+						current_insts.push_back(Cell{Inst::STORE,posret});
 					break;
 					case MUL:
 						if(first.is_ref){
@@ -279,19 +375,39 @@ class Program{
 								param_num=3;
 								current_insts.push_back(Cell{Inst::CALL,create_call("*")});
 							}else{
-								current_insts.push_back(Cell{Inst::LOAD,first.val});
-								for(int i = 0; i<second.val-1;i++){
-									current_insts.push_back(Cell{Inst::ADD,first.val});
+								if(second.val<10){
+									current_insts.push_back(Cell{Inst::LOAD,first.val});
+									for(int i = 0; i<second.val-1;i++){
+										current_insts.push_back(Cell{Inst::ADD,first.val});
+									}
+									current_insts.push_back(Cell{Inst::STORE,posret});
+								}else{
+									current_values.push(first);
+									current_insts.push_back(Cell{Inst::SET,second.val});
+									current_insts.push_back(Cell{Inst::STORE,expr_reg2});
+									current_values.push(Value{expr_reg2,true});
+									current_values.push(Value{posret,true});
+									param_num=3;
+									current_insts.push_back(Cell{Inst::CALL,create_call("*")});
 								}
-								current_insts.push_back(Cell{Inst::STORE,posret});
 							}
 						}else{
 							if(second.is_ref){
-								current_insts.push_back(Cell{Inst::LOAD,second.val});
-								for(int i = 0; i<first.val-1;i++){
-									current_insts.push_back(Cell{Inst::ADD,second.val});
+								if(second.val<10){
+									current_insts.push_back(Cell{Inst::LOAD,second.val});
+									for(int i = 0; i<first.val-1;i++){
+										current_insts.push_back(Cell{Inst::ADD,second.val});
+									}
+									current_insts.push_back(Cell{Inst::STORE,posret});
+								}else{
+									current_insts.push_back(Cell{Inst::SET,second.val});
+									current_insts.push_back(Cell{Inst::STORE,expr_reg1});
+									current_values.push(Value{expr_reg2,true});
+									current_values.push(second);
+									current_values.push(Value{posret,true});
+									param_num=3;
+									current_insts.push_back(Cell{Inst::CALL,create_call("*")});
 								}
-								current_insts.push_back(Cell{Inst::STORE,posret});
 							}else{
 								current_insts.push_back(Cell{Inst::SET,first.val});
 								current_insts.push_back(Cell{Inst::STORE,expr_reg1});
@@ -306,36 +422,55 @@ class Program{
 						}
 					break;
 					case DIV:
+					case REM:
 						if(first.is_ref){
 							if(second.is_ref){
 								current_values.push(first);
 								current_values.push(second);
-								current_values.push(Value{posret,true});
-								param_num=3;
+								if(oper == DIV){
+									current_values.push(Value{comp_reg1,true});
+									current_values.push(Value{posret,true});
+								}else{
+									current_values.push(Value{posret,true});
+									current_values.push(Value{comp_reg1,true});
+								}
+								param_num=4;
 								current_insts.push_back(Cell{Inst::CALL,create_call("/")});
 							}else{
-								if(second.val == 2){
+								if(oper == DIV && second.val == 2){
 									current_insts.push_back(Cell{Inst::LOAD,first.val});
 									current_insts.push_back(Cell{Inst::HALF,1});
 									current_insts.push_back(Cell{Inst::STORE,posret});
 								}else{
-									current_insts.push_back(Cell{Inst::SET,first.val});
+									current_values.push(first);
+									current_insts.push_back(Cell{Inst::SET,second.val});
 									current_insts.push_back(Cell{Inst::STORE,expr_reg1});
 									current_values.push(Value{expr_reg1,true});
-									current_values.push(second);
-									current_values.push(Value{posret,true});
-									param_num=3;
+									if(oper == DIV){
+										current_values.push(Value{comp_reg1,true});
+										current_values.push(Value{posret,true});
+									}else{
+										current_values.push(Value{posret,true});
+										current_values.push(Value{comp_reg1,true});
+									}
+									param_num=4;
 									current_insts.push_back(Cell{Inst::CALL,create_call("/")});
 								}
 							}
 						}else{
 							if(second.is_ref){
-								current_values.push(first);
-								current_insts.push_back(Cell{Inst::SET,second.val});
+								current_insts.push_back(Cell{Inst::SET,first.val});
 								current_insts.push_back(Cell{Inst::STORE,expr_reg1});
 								current_values.push(Value{expr_reg1,true});
-								current_values.push(Value{posret,true});
-								param_num=3;
+								current_values.push(second);
+								if(oper == DIV){
+									current_values.push(Value{comp_reg1,true});
+									current_values.push(Value{posret,true});
+								}else{
+									current_values.push(Value{posret,true});
+									current_values.push(Value{comp_reg1,true});
+								}
+								param_num=4;
 								current_insts.push_back(Cell{Inst::CALL,create_call("/")});
 							}else{
 								current_insts.push_back(Cell{Inst::SET,first.val});
@@ -344,24 +479,15 @@ class Program{
 								current_insts.push_back(Cell{Inst::SET,second.val});
 								current_insts.push_back(Cell{Inst::STORE,expr_reg2});
 								current_values.push(Value{expr_reg2,true});
-								current_values.push(Value{posret,true});
-								param_num=3;
+								if(oper == DIV){
+									current_values.push(Value{comp_reg1,true});
+									current_values.push(Value{posret,true});
+								}else{
+									current_values.push(Value{posret,true});
+									current_values.push(Value{comp_reg1,true});
+								}
+								param_num=4;
 								current_insts.push_back(Cell{Inst::CALL,create_call("/")});
-							}
-						}
-					break;
-					case REM:
-						if(first.is_ref){
-							if(second.is_ref){
-								
-							}else{
-
-							}
-						}else{
-							if(second.is_ref){
-
-							}else{
-								
 							}
 						}
 					break;
@@ -457,22 +583,28 @@ class Program{
 		}
 
 		void comp(Comparisons compr){
-			last_comp = compr;
+			comp_stack.push(compr);
+			comp_values.push(current_values.front());
+			current_values.pop();
+			comp_values.push(current_values.front());
+			current_values.pop();
 		}
 
 		void control(Ctrl ctrl){
-			auto first = current_values.front();
-			current_values.pop();
-			auto second = current_values.front();
-			current_values.pop();
+			auto second = comp_values.top();
+			comp_values.pop();
+			auto first = comp_values.top();
+			comp_values.pop();
 
 			long long fail_pos = new_label();
 			long long success_pos = new_label();
 			long long posA, posB;
 
-			Comparisons compr = last_comp;
-			last_comp = NO;
+			Comparisons compr = comp_stack.top();
+			comp_stack.pop();
 
+			// cout<<first.val<<" "<<compr<<" "<<second.val<<endl;
+			Inst_list comp_insts;
 			if(first.is_ref){
 				posA = first.val;
 			}else{
@@ -489,32 +621,32 @@ class Program{
 				current_insts.push_back(Cell{Inst::STORE,comp_reg2});
 			}
 
-			if(ctrl == Ctrl::WHILE){
-				switch (compr){
-					case EQ:
-						compr = NEQ;
-					break;
-					case GT:
-						compr = LTE;
-					break;
-					case LT:
-						compr = GTE;
-					break;
-					case GTE:
-						compr = LT;
-					break;
-					case LTE:	
-						compr = GT;
-					break;
-					case NEQ:
-						compr = EQ;
-					break;
-				}
-			}
+			// if(ctrl == Ctrl::WHILE){
+			// 	switch (compr){
+			// 		case EQ:
+			// 			compr = NEQ;
+			// 		break;
+			// 		case GT:
+			// 			compr = LTE;
+			// 		break;
+			// 		case LT:
+			// 			compr = GTE;
+			// 		break;
+			// 		case GTE:
+			// 			compr = LT;
+			// 		break;
+			// 		case LTE:	
+			// 			compr = GT;
+			// 		break;
+			// 		case NEQ:
+			// 			compr = EQ;
+			// 		break;
+			// 	}
+			// }
 			
 			switch (compr){
 				case EQ:
-					current_insts = {
+					comp_insts = {
 						{Inst::LOAD, posA},
 						{Inst::SUB, posB},
 						{Inst::JPOS, fail_pos},
@@ -524,28 +656,28 @@ class Program{
 					};
 				break;
 				case GT:
-					current_insts = {
+					comp_insts = {
 						{Inst::LOAD,posA},
 						{Inst::SUB,posB},
 						{Inst::JZERO,fail_pos}
 						};
 				break;
 				case LT:
-					current_insts = {
+					comp_insts = {
 						{Inst::LOAD,posB},
 						{Inst::SUB,posA},
 						{Inst::JZERO,fail_pos}
 						};
 				break;
 				case GTE:
-					current_insts = {
+					comp_insts = {
 						{Inst::LOAD,posB},
 						{Inst::SUB,posA},
 						{Inst::JPOS, fail_pos}
 						};
 				break;
 				case LTE:	
-					current_insts = {
+					comp_insts = {
 						{Inst::LOAD,posA},
 						{Inst::SUB,posB},
 						{Inst::JPOS, fail_pos}
@@ -553,7 +685,7 @@ class Program{
 				break;
 				case NEQ:
 				int if_label = new_label();
-				current_insts = {
+				comp_insts = {
 					{Inst::LOAD, posA},
 					{Inst::SUB, posB},
 					{Inst::JPOS, if_label},
@@ -565,6 +697,8 @@ class Program{
 				};
 				break;// eq 0 optimisation
 			}
+
+			current_insts.insert(current_insts.end(),comp_insts.begin(),comp_insts.end());
 
 			switch(ctrl){
 				case Ctrl::IF:{

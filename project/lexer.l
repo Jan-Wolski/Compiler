@@ -52,5 +52,5 @@ BEGIN {return t_BEGIN;}
 
 \[[^\[]*\] ;
 [[:blank:]]+
-\n ;
+[\r\n]
 . {return ERROR;}
