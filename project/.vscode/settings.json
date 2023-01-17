@@ -1,0 +1,17 @@
+{
+	"makefile.launchConfigurations": [
+		{
+			"cwd": "/home/jak/Studia/JFTT/Lista4/project",
+			"binaryPath": "/home/jak/Studia/JFTT/Lista4/project/kompilator",
+			"binaryArgs": []
+		}
+	],
+	"files.associations": {
+		"iostream": "cpp",
+		"ostream": "cpp",
+		"stdexcept": "cpp",
+		"stack": "cpp",
+		"queue": "cpp",
+		"initializer_list": "cpp"
+	}
+}

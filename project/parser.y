@@ -1,6 +1,6 @@
 %code requires { 
   #include <stdio.h>
-  #include "Program.h"
+  #include "program.h"
   #include "enums.h"
 }
 %code provides { 
@@ -9,7 +9,7 @@
 %{
   #include <iostream>
   #include <stdio.h>
-  #include "Program.h"
+  #include "program.h"
   #include "enums.h"
 
   int yylex();
@@ -101,7 +101,7 @@ value : NUM		{program.value($1);}
 
 void yyerror( Program & program, char const* errname)
 {
-  std::cerr << std::endl << errname << " w lini " << yylineno << std::endl;
+  std::cerr << std::endl << "Błąd składni" << " w lini " << yylineno << std::endl;
   exit(-1);
 }
 

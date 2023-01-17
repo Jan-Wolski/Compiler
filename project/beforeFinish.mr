@@ -1,0 +1,5 @@
+GET    6
+GET    7
+CALL   1
+PUT    8
+HALT  

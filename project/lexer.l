@@ -2,7 +2,11 @@
 %option yylineno
 %{
   #include <string.h>
-  #include "parser.hh"
+  #ifdef DEBUG
+    #include "parser-dbg.hh" 
+  #else
+    #include "parser.hh" 
+  #endif
   #include "enums.h"
 %}
 %%

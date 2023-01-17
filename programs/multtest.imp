@@ -1,0 +1,17 @@
+PROCEDURE multiply(a,b,c) IS
+BEGIN
+   REPEAT 
+      READ a;
+      READ b;
+      c:=a*b;
+      WRITE c;
+   UNTIL a=0;
+END
+
+PROGRAM IS
+VAR a,b,c
+BEGIN
+
+   multiply(a,b,c);
+   
+END 

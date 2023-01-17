@@ -48,7 +48,7 @@ extern int yydebug;
 #line 1 "parser.y"
  
   #include <stdio.h>
-  #include "Program.h"
+  #include "program.h"
   #include "enums.h"
 
 #line 55 "parser.hh"

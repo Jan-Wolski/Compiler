@@ -1,0 +1,7 @@
+PROGRAM IS
+VAR n,m,potega,dzielnik
+BEGIN
+    READ a;
+    READ b;
+
+END 

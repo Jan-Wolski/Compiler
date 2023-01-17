@@ -2,20 +2,26 @@
 #include <iostream>
 #include <iterator>
 
-#include "Program.h" 
-#include "parser.hh" 
+#include "program.h" 
+#ifdef DEBUG
+	#include "parser-dbg.hh" 
+#else
+	#include "parser.hh" 
+#endif
 
 int main(int argc, char* argv[]){
 	FILE* infile;
 	string outfilename;
+	
 	if(argc<2){
-		std::cerr<<"No input file given defaulting to stdin."<<std::endl;
+		std::cerr<<"Nie podano pliku wejściowego, używanie stdin."<<std::endl;
 		infile = stdin;
 	}else{
 		infile = fopen(argv[1],"r");
 	}
+
 	if(argc<3){
-		std::cerr<<"No output file given defaulting to stdout."<<std::endl;
+		std::cerr<<"Nie podano pliku wyjściowego, używanie stdout."<<std::endl;
 		outfilename = "";
 	}else{
 		outfilename = argv[2];
@@ -24,10 +30,11 @@ int main(int argc, char* argv[]){
 	Program program;
 	 
 	run_parser(program,infile);
-
+	cout<<"Parsowanie zakończone."<<endl;
 	program.finish();
+	cout<<"Optymalizacja zakończona."<<endl;
 	program.save(outfilename);
-
+	cout<<"Zapisywanie zakończone."<<endl;
 
 	return 0;
 }
