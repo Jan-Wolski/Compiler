@@ -152,83 +152,83 @@ class Program{
 	}
 
 	void div(){
-		int DIV0a = new_label();
-		int DIV0b = new_label();
-		int LSHLOOP = new_label();
-		int LSHDONE = new_label();
-		int EZCASE = new_label();
-		int LOOPLOOP = new_label();
+		int div0a = new_label();
+		int div0b = new_label();
+		int shloop = new_label();
+		int shldone = new_label();
+		int ezcase = new_label();
+		int loop = new_label();
 		int endif = new_label();
-		int FINISHED = new_label();
+		int end = new_label();
 
 		long long inA = first_var;
 		long long inB = first_var+1;
-		long long A = first_var+2;
-		long long D = first_var+3;
-		long long B = first_var+4;
-		long long C = first_var+5;
+		long long posA = first_var+2;
+		long long posD = first_var+3;
+		long long posB = first_var+4;
+		long long posC = first_var+5;
 		
 
 
 		Inst_list instrs={
 			{Inst::LOAD, inA},
-			{Inst::JZERO, DIV0a},
-			{Inst::STORE, A},
+			{Inst::JZERO, div0a},
+			{Inst::STORE, posA},
 			{Inst::LOAD, inB},
-			{Inst::JZERO, DIV0b},
-			{Inst::STORE, B},
+			{Inst::JZERO, div0b},
+			{Inst::STORE, posB},
 			{Inst::SET, 0},
-			{Inst::STORE, C},
-			{Inst::LABEL, LSHLOOP},
-			{Inst::LOAD, B},
-			{Inst::SUB, A},
-			{Inst::JPOS, LSHDONE},
-			{Inst::LOAD, B},
+			{Inst::STORE, posC},
+			{Inst::LABEL, shloop},
+			{Inst::LOAD, posB},
+			{Inst::SUB, posA},
+			{Inst::JPOS, shldone},
+			{Inst::LOAD, posB},
 			{Inst::ADD, 0},
-			{Inst::STORE, B},
-			{Inst::LOAD, C},
+			{Inst::STORE, posB},
+			{Inst::LOAD, posC},
 			{Inst::ADD, one_reg},
-			{Inst::STORE, C},
-			{Inst::JUMP, LSHLOOP},
-			{Inst::LABEL, LSHDONE},
-			{Inst::LOAD, C},
-			{Inst::JZERO, EZCASE},
+			{Inst::STORE, posC},
+			{Inst::JUMP, shloop},
+			{Inst::LABEL, shldone},
+			{Inst::LOAD, posC},
+			{Inst::JZERO, ezcase},
 			{Inst::SET, 0},
-			{Inst::STORE, D},
-			{Inst::LABEL, LOOPLOOP},
-			{Inst::LOAD, B},
-			{Inst::HALF, B},
-			{Inst::STORE, B},
-			{Inst::LOAD, C},
+			{Inst::STORE, posD},
+			{Inst::LABEL, loop},
+			{Inst::LOAD, posB},
+			{Inst::HALF, posB},
+			{Inst::STORE, posB},
+			{Inst::LOAD, posC},
 			{Inst::SUB, one_reg},
-			{Inst::STORE, C},
-			{Inst::LOAD, D},
+			{Inst::STORE, posC},
+			{Inst::LOAD, posD},
 			{Inst::ADD, 0},
-			{Inst::STORE, D},
-			{Inst::LOAD, B},
-			{Inst::SUB, A},
+			{Inst::STORE, posD},
+			{Inst::LOAD, posB},
+			{Inst::SUB, posA},
 			{Inst::JPOS, endif},
-			{Inst::LOAD, A},
-			{Inst::SUB, B},
-			{Inst::STORE, A},
-			{Inst::LOAD, D},
+			{Inst::LOAD, posA},
+			{Inst::SUB, posB},
+			{Inst::STORE, posA},
+			{Inst::LOAD, posD},
 			{Inst::ADD, one_reg},
-			{Inst::STORE, D},
+			{Inst::STORE, posD},
 			{Inst::LABEL, endif},
-			{Inst::LOAD, C},
-			{Inst::JZERO, FINISHED},
-			{Inst::JUMP, LOOPLOOP},
-			{Inst::LABEL, DIV0b},
+			{Inst::LOAD, posC},
+			{Inst::JZERO, end},
+			{Inst::JUMP, loop},
+			{Inst::LABEL, div0b},
 			{Inst::SET, 0},
-			{Inst::STORE, A},
-			{Inst::LABEL, DIV0a},
-			{Inst::LABEL, EZCASE},
+			{Inst::STORE, posA},
+			{Inst::LABEL, div0a},
+			{Inst::LABEL, ezcase},
 			{Inst::SET, 0},
-			{Inst::STORE, D},
-			{Inst::LABEL, FINISHED}
-			// {Inst::LOAD, D},
+			{Inst::STORE, posD},
+			{Inst::LABEL, end}
+			// {Inst::LOAD, posD},
 			// {Inst::STORE, outQuot},
-			// {Inst::LOAD, A},
+			// {Inst::LOAD, posA},
 			// {Inst::STORE, outRest}
 		};
 		last_insts = instrs;
