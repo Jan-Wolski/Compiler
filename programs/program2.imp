@@ -6,6 +6,7 @@ BEGIN
     r:=n%d;
     WHILE r=0 DO
         n:=n/d;
+        WRITE r;
         p:=p+1;
         r:=n%d;
     ENDWHILE

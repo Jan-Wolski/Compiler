@@ -16,7 +16,7 @@ int yylex();
 %}
 %%
 \[([^\]]|\n)*\] ;
-[ \t]+          ;
+[ \t\r]+        ;
 GET             { yylval = GET;    return COM_1; };
 PUT             { yylval = PUT;    return COM_1; };
 LOADI           { yylval = LOADI;  return COM_1; };

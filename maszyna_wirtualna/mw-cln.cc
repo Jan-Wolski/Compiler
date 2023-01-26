@@ -73,5 +73,5 @@ void run_machine( vector< pair<int,long long> > & program )
     }
   }
   cout.imbue(std::locale(""));
-  cout << cBlue << "Skończono program (koszt: " << cRed << (t+io) << cBlue << "; w tym i/o: " << io << ")." << cReset << endl;
+  cout << cBlue << "Skończono program (koszt: " << cRed << t << cBlue << "; w tym i/o: " << io << ")." << cReset << endl;
 }

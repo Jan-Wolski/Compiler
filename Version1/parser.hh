@@ -45,16 +45,13 @@
 extern int yydebug;
 #endif
 /* "%code requires" blocks.  */
-#line 8 "parser.y"
+#line 1 "parser.y"
  
-#include<vector> 
-#include<utility>
+  #include <stdio.h>
+  #include "program.h"
+  #include "enums.h"
 
-#define YYSTYPE long long
-
-using namespace std;
-
-#line 58 "parser.hh"
+#line 55 "parser.hh"
 
 /* Token kinds.  */
 #ifndef YYTOKENTYPE
@@ -65,18 +62,48 @@ using namespace std;
     YYEOF = 0,                     /* "end of file"  */
     YYerror = 256,                 /* error  */
     YYUNDEF = 257,                 /* "invalid token"  */
-    COM_0 = 258,                   /* COM_0  */
-    COM_1 = 259,                   /* COM_1  */
-    JUMP_1 = 260,                  /* JUMP_1  */
-    NUMBER = 261,                  /* NUMBER  */
-    ERROR = 262                    /* ERROR  */
+    PROCEDURE = 258,               /* PROCEDURE  */
+    IS = 259,                      /* IS  */
+    VAR = 260,                     /* VAR  */
+    t_BEGIN = 261,                 /* t_BEGIN  */
+    END = 262,                     /* END  */
+    PROGRAM = 263,                 /* PROGRAM  */
+    IF = 264,                      /* IF  */
+    THEN = 265,                    /* THEN  */
+    ELSE = 266,                    /* ELSE  */
+    ENDIF = 267,                   /* ENDIF  */
+    WHILE = 268,                   /* WHILE  */
+    DO = 269,                      /* DO  */
+    ENDWHILE = 270,                /* ENDWHILE  */
+    REPEAT = 271,                  /* REPEAT  */
+    UNTIL = 272,                   /* UNTIL  */
+    READ = 273,                    /* READ  */
+    WRITE = 274,                   /* WRITE  */
+    ASSIGN = 275,                  /* ASSIGN  */
+    OP = 276,                      /* OP  */
+    COMP = 277,                    /* COMP  */
+    NUM = 278,                     /* NUM  */
+    ID = 279,                      /* ID  */
+    ERROR = 280                    /* ERROR  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
-typedef int YYSTYPE;
+union YYSTYPE
+{
+#line 24 "parser.y"
+ 
+  long long number; 
+  Operators op; 
+  Comparisons comp; 
+  char* text; 
+
+#line 104 "parser.hh"
+
+};
+typedef union YYSTYPE YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1
 #endif
@@ -85,7 +112,13 @@ typedef int YYSTYPE;
 extern YYSTYPE yylval;
 
 
-int yyparse (vector< pair<int,long long> > & program);
+int yyparse (Program& program);
 
+/* "%code provides" blocks.  */
+#line 6 "parser.y"
+ 
+  void run_parser( Program & program, FILE * data ); 
+
+#line 123 "parser.hh"
 
 #endif /* !YY_YY_PARSER_HH_INCLUDED  */

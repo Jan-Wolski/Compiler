@@ -52,7 +52,6 @@ struct Procedure{
 
 struct Proc_call{
 	string proc;
-	string from_proc;
 	vector<Value> args;
 };
 
@@ -153,83 +152,83 @@ class Program{
 	}
 
 	void div(){
-		int div0a = new_label();
-		int div0b = new_label();
-		int shloop = new_label();
-		int shldone = new_label();
-		int ezcase = new_label();
-		int loop = new_label();
+		int DIV0a = new_label();
+		int DIV0b = new_label();
+		int LSHLOOP = new_label();
+		int LSHDONE = new_label();
+		int EZCASE = new_label();
+		int LOOPLOOP = new_label();
 		int endif = new_label();
-		int end = new_label();
+		int FINISHED = new_label();
 
 		long long inA = first_var;
 		long long inB = first_var+1;
-		long long posA = first_var+2;
-		long long posD = first_var+3;
-		long long posB = first_var+4;
-		long long posC = first_var+5;
+		long long A = first_var+2;
+		long long D = first_var+3;
+		long long B = first_var+4;
+		long long C = first_var+5;
 		
 
 
 		Inst_list instrs={
 			{Inst::LOAD, inA},
-			{Inst::JZERO, div0a},
-			{Inst::STORE, posA},
+			{Inst::JZERO, DIV0a},
+			{Inst::STORE, A},
 			{Inst::LOAD, inB},
-			{Inst::JZERO, div0b},
-			{Inst::STORE, posB},
+			{Inst::JZERO, DIV0b},
+			{Inst::STORE, B},
 			{Inst::SET, 0},
-			{Inst::STORE, posC},
-			{Inst::LABEL, shloop},
-			{Inst::LOAD, posB},
-			{Inst::SUB, posA},
-			{Inst::JPOS, shldone},
-			{Inst::LOAD, posB},
+			{Inst::STORE, C},
+			{Inst::LABEL, LSHLOOP},
+			{Inst::LOAD, B},
+			{Inst::SUB, A},
+			{Inst::JPOS, LSHDONE},
+			{Inst::LOAD, B},
 			{Inst::ADD, 0},
-			{Inst::STORE, posB},
-			{Inst::LOAD, posC},
+			{Inst::STORE, B},
+			{Inst::LOAD, C},
 			{Inst::ADD, one_reg},
-			{Inst::STORE, posC},
-			{Inst::JUMP, shloop},
-			{Inst::LABEL, shldone},
-			{Inst::LOAD, posC},
-			{Inst::JZERO, ezcase},
+			{Inst::STORE, C},
+			{Inst::JUMP, LSHLOOP},
+			{Inst::LABEL, LSHDONE},
+			{Inst::LOAD, C},
+			{Inst::JZERO, EZCASE},
 			{Inst::SET, 0},
-			{Inst::STORE, posD},
-			{Inst::LABEL, loop},
-			{Inst::LOAD, posB},
-			{Inst::HALF, posB},
-			{Inst::STORE, posB},
-			{Inst::LOAD, posC},
+			{Inst::STORE, D},
+			{Inst::LABEL, LOOPLOOP},
+			{Inst::LOAD, B},
+			{Inst::HALF, B},
+			{Inst::STORE, B},
+			{Inst::LOAD, C},
 			{Inst::SUB, one_reg},
-			{Inst::STORE, posC},
-			{Inst::LOAD, posD},
+			{Inst::STORE, C},
+			{Inst::LOAD, D},
 			{Inst::ADD, 0},
-			{Inst::STORE, posD},
-			{Inst::LOAD, posB},
-			{Inst::SUB, posA},
+			{Inst::STORE, D},
+			{Inst::LOAD, B},
+			{Inst::SUB, A},
 			{Inst::JPOS, endif},
-			{Inst::LOAD, posA},
-			{Inst::SUB, posB},
-			{Inst::STORE, posA},
-			{Inst::LOAD, posD},
+			{Inst::LOAD, A},
+			{Inst::SUB, B},
+			{Inst::STORE, A},
+			{Inst::LOAD, D},
 			{Inst::ADD, one_reg},
-			{Inst::STORE, posD},
+			{Inst::STORE, D},
 			{Inst::LABEL, endif},
-			{Inst::LOAD, posC},
-			{Inst::JZERO, end},
-			{Inst::JUMP, loop},
-			{Inst::LABEL, div0b},
+			{Inst::LOAD, C},
+			{Inst::JZERO, FINISHED},
+			{Inst::JUMP, LOOPLOOP},
+			{Inst::LABEL, DIV0b},
 			{Inst::SET, 0},
-			{Inst::STORE, posA},
-			{Inst::LABEL, div0a},
-			{Inst::LABEL, ezcase},
+			{Inst::STORE, A},
+			{Inst::LABEL, DIV0a},
+			{Inst::LABEL, EZCASE},
 			{Inst::SET, 0},
-			{Inst::STORE, posD},
-			{Inst::LABEL, end}
-			// {Inst::LOAD, posD},
+			{Inst::STORE, D},
+			{Inst::LABEL, FINISHED}
+			// {Inst::LOAD, D},
 			// {Inst::STORE, outQuot},
-			// {Inst::LOAD, posA},
+			// {Inst::LOAD, A},
 			// {Inst::STORE, outRest}
 		};
 		last_insts = instrs;
@@ -759,7 +758,6 @@ class Program{
 			out_list = procs["main"].insts;
 			out_list.push_back(Cell{Inst::HALT,1});
 			int padding = procs["main"].table.size();
-			int procedures = false;
 			// save("beforeFinish.mr");
 
 
@@ -770,33 +768,6 @@ class Program{
 					Procedure &proc = procs[call.proc];
 					if(proc.label == -1){
 						proc.label = new_label();
-						for(unsigned int j=0;j<proc.insts.size();j++){
-							if(proc.insts[j].val<first_var+proc.bindings && proc.insts[j].val>=first_var){
-								switch(proc.insts[j].inst){
-									case Inst::GET:
-										proc.insts.insert(proc.insts.begin()+j,Cell{Inst::STORE,proc.insts[j].val});
-										proc.insts[j].val = 0;
-										break;
-									case Inst::PUT:
-										proc.insts.insert(proc.insts.begin()+j-1,Cell{Inst::LOADI,proc.insts[j].val});
-										proc.insts[j+1].val = 0;
-										break;
-									case Inst::LOAD:
-										proc.insts[j].inst = Inst::LOADI;
-										break;
-									case Inst::STORE:
-										proc.insts[j].inst = Inst::STOREI;
-										break;
-									case Inst::ADD:
-										proc.insts[j].inst = Inst::ADDI;
-										break;
-									case Inst::SUB:
-										proc.insts[j].inst = Inst::SUBI;
-										break;
-								}
-							}
-						}
-
 						for(unsigned int j=0;j<proc.insts.size();j++){
 							switch(proc.insts[j].inst){
 								case Inst::GET:
@@ -822,7 +793,6 @@ class Program{
 								break;
 								case Inst::CALL:
 									Proc_call &icall = calls[proc.insts[j].val];
-									icall.from_proc = proc.name;
 									for(int k = 0;k<icall.args.size();k++){
 										if(icall.args[k].val>=first_var){
 											icall.args[k].val = icall.args[k].val + padding;
@@ -840,15 +810,10 @@ class Program{
 					
 					Inst_list call_list;
 					for(unsigned int j=0;j<call.args.size();j++){
-						if(!call.args[j].is_ref){
-							cerr<<"Nie można przekazać stałej do funkcji."<<endl;
-							// call_list.push_back(Cell{Inst::SET,call.args[j].val});
-						}
-						Procedure &from_proc = procs[call.from_proc];
-						if(call.args[j].val>=from_proc.padding+from_proc.bindings+first_var || call.args[j].val<first_var){
-							call_list.push_back(Cell{Inst::SET,call.args[j].val});
-						}else{
+						if(call.args[j].is_ref){
 							call_list.push_back(Cell{Inst::LOAD,call.args[j].val});
+						}else{
+							call_list.push_back(Cell{Inst::SET,call.args[j].val});
 						}
 						call_list.push_back(Cell{Inst::STORE,proc.padding+j+first_var});
 					}
@@ -856,12 +821,12 @@ class Program{
 					call_list.push_back(Cell{Inst::SET,-1});
 					call_list.push_back(Cell{Inst::STORE,proc.retadr});
 					call_list.push_back(Cell{Inst::JUMP,proc.label});
-					// for(unsigned int j=0;j<call.args.size();j++){
-					// 	if(call.args[j].is_ref){
-					// 		call_list.push_back(Cell{Inst::LOAD,proc.padding+j+first_var});
-					// 	}
-					// 	call_list.push_back(Cell{Inst::STORE,call.args[j].val});
-					// }
+					for(unsigned int j=0;j<call.args.size();j++){
+						if(call.args[j].is_ref){
+							call_list.push_back(Cell{Inst::LOAD,proc.padding+j+first_var});
+						}
+						call_list.push_back(Cell{Inst::STORE,call.args[j].val});
+					}
 					out_list.erase(out_list.begin()+i);
 					out_list.insert(out_list.begin()+i,call_list.begin(),call_list.end());
 
@@ -871,8 +836,6 @@ class Program{
 					out_list.insert(out_list.begin(),Cell{Inst::SET,1});
 					out_list.insert(out_list.begin()+1,Cell{Inst::STORE,one_reg});
 					one_reg_used = true;
-				}else if(out_list[i].inst==Inst::HALT){
-					procedures = true;
 				}
 			}
 
