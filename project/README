@@ -1,0 +1,22 @@
+Autor: Jan Wolski
+
+Pliki:
+	Kompilacja:
+		Makefile
+	Kod źródłowy:
+		enums.h
+		program.h
+		main.cpp
+	Parsowanie:
+		lexer.l
+		parser.y
+
+Narzędzia:
+	g++ (GCC) 12.2.0
+	flex 2.6.4
+	bison (GNU Bison) 3.8.2
+	GNU Make 4.3
+
+Kompilacja:
+	make
+
