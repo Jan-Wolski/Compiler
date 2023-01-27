@@ -338,10 +338,16 @@ class Program{
 								pos = second.val;
 							}else{
 								if(oper == SUB){
-									current_insts.push_back(Cell{Inst::SET,second.val});
-									current_insts.push_back(Cell{Inst::STORE,expr_reg1});
+									if(second.val == 1){
+										// current_insts.push_back(Cell{Inst::LOAD,one_reg});
+										pos = one_reg;
+									}else{
+										current_insts.push_back(Cell{Inst::SET,second.val});
+										current_insts.push_back(Cell{Inst::STORE,expr_reg1});
+										pos = expr_reg1;
+									}
 									current_insts.push_back(Cell{Inst::LOAD,first.val});
-									pos = expr_reg1;
+										
 								}else{
 									pos = first.val;
 									current_insts.push_back(Cell{Inst::SET,second.val});
@@ -355,9 +361,14 @@ class Program{
 								// long long val = const_eval(oper);
 								// current_insts.push_back(Cell{Inst::SET,val});
 								// oper = 0;
-								pos=expr_reg1;
-								current_insts.push_back(Cell{Inst::SET,second.val});
-								current_insts.push_back(Cell{Inst::STORE,expr_reg1});
+								
+								if(second.val == 1){
+									pos = one_reg;
+								}else{
+									pos=expr_reg1;
+									current_insts.push_back(Cell{Inst::SET,second.val});
+									current_insts.push_back(Cell{Inst::STORE,expr_reg1});
+								}
 								current_insts.push_back(Cell{Inst::SET,first.val});
 							}
 						}
@@ -377,10 +388,13 @@ class Program{
 								param_num=3;
 								current_insts.push_back(Cell{Inst::CALL,create_call("*")});
 							}else{
-								if(second.val<10){
+								if(second.val == 0){
+									current_insts.push_back(Cell{Inst::SET,0});
+									current_insts.push_back(Cell{Inst::STORE,posret});
+								}else	if(second.val<10){
 									current_insts.push_back(Cell{Inst::LOAD,first.val});
 									for(int i = 0; i<second.val-1;i++){
-										current_insts.push_back(Cell{Inst::ADD,first.val});
+										current_insts.push_back(Cell{Inst::ADD,0});
 									}
 									current_insts.push_back(Cell{Inst::STORE,posret});
 								}else{
@@ -395,16 +409,19 @@ class Program{
 							}
 						}else{
 							if(second.is_ref){
-								if(second.val<10){
+								if(first.val == 0){
+									current_insts.push_back(Cell{Inst::SET,0});
+									current_insts.push_back(Cell{Inst::STORE,posret});
+								}else if(first.val<10){
 									current_insts.push_back(Cell{Inst::LOAD,second.val});
 									for(int i = 0; i<first.val-1;i++){
-										current_insts.push_back(Cell{Inst::ADD,second.val});
+										current_insts.push_back(Cell{Inst::ADD,0});
 									}
 									current_insts.push_back(Cell{Inst::STORE,posret});
 								}else{
-									current_insts.push_back(Cell{Inst::SET,second.val});
+									current_insts.push_back(Cell{Inst::SET,first.val});
 									current_insts.push_back(Cell{Inst::STORE,expr_reg1});
-									current_values.push(Value{expr_reg2,true});
+									current_values.push(Value{expr_reg1,true});
 									current_values.push(second);
 									current_values.push(Value{posret,true});
 									param_num=3;
@@ -987,6 +1004,33 @@ class Program{
 					procedures = true;
 				}
 			}
+
+
+			for(unsigned int i=0;i<out_list.size()-1;i++){
+				if(out_list[i].val == out_list[i+1].val){
+					if((out_list[i].inst == Inst::STORE && out_list[i+1].inst == Inst::LOAD) || 
+						(out_list[i].inst == Inst::STOREI && out_list[i+1].inst == Inst::LOADI)){
+						out_list.erase(out_list.begin()+i+1);
+					}
+				}
+			}
+
+		// for(unsigned int i=0;i<out_list.size()-1;i++){
+		// 	bool ptr = false;
+		// 	bool nope = false;
+		// 	if(out_list[i].inst == Inst::STORE){
+		// 		nope = false;
+		// 		for(unsigned int j=i;j<out_list.size()-1;j++){
+		// 			if(out_list[i].inst == Inst::HALT || out_list[i].inst == Inst::JUMPI){
+		// 				break;
+		// 			}else if(out_list[i].){
+
+		// 			}
+
+		// 		}
+		// 	}
+
+		// }
 
 			//remove labels
 			vector<int> label_pos(labels_id);
