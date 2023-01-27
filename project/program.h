@@ -1,4 +1,5 @@
-#pragma once
+#ifndef PROGRAM_H
+#define PROGRAM_H
 
 #include <map>
 #include <stdexcept>
@@ -100,25 +101,22 @@ class Program{
 
 		long long inA = first_var;
 		long long inB = first_var+1;
-		long long posC = first_var+2;
-		long long posA = first_var+3;
-		long long posB = first_var+4;
-		long long posD = first_var+5;
-		long long posE = first_var+6;
+		long long ret = comp_reg1;
+		long long posA = first_var+2;
+		long long posB = first_var+3;
+		long long posD = first_var+4;
+		long long posE = first_var+5;
 
 		Inst_list instrs = {
+			{Inst::SET,0},
+			{Inst::STORE,ret},
 			{Inst::LOAD,inA},
-			{Inst::JZERO,set_zero},
+			{Inst::JZERO,end},
 			{Inst::STORE,posA},
 			{Inst::LOAD,inB},
-			{Inst::JZERO,set_zero},
-			{Inst::STORE,posB},
-			{Inst::SET,0},
-			{Inst::STORE,posC},
+			{Inst::JZERO,end},
 			{Inst::LABEL,load},
 
-			{Inst::LOAD,posB},
-			{Inst::JZERO,end},
 			{Inst::STORE,posD},
 			{Inst::HALF,1},
 			{Inst::STORE,posB},
@@ -129,22 +127,21 @@ class Program{
 			{Inst::JZERO,justa},
 
 			{Inst::LOAD,posA},
-			{Inst::ADD,posC},
-			{Inst::STORE,posC},
+			{Inst::ADD,ret},
+			{Inst::STORE,ret},
 			{Inst::LABEL,justa},
 			{Inst::LOAD,posA},
 			{Inst::ADD,posA}, 
 			{Inst::STORE,posA},
-			{Inst::JUMP,load},
-			{Inst::LABEL,set_zero},
-			{Inst::STORE,posC},
+			{Inst::LOAD,posB},
+			{Inst::JPOS,load},
+			{Inst::LOAD,ret},
 			{Inst::LABEL,end}
 		};
 		last_insts = instrs;
 		name_procedure("*");
 		reference("x");
 		reference("y");
-		reference("z");
 		var("a");
 		var("b");
 		var("d");
@@ -163,18 +160,26 @@ class Program{
 		int endif = new_label();
 		int end = new_label();
 
+		// long long inA = first_var;
+		// long long inB = first_var+1;
+		// long long rest = first_var+2;//rest
+		// long long quot = first_var+3;//quotient
+		// long long posB = first_var+4;
+		// long long posC = first_var+5;
+
 		long long inA = first_var;
 		long long inB = first_var+1;
-		long long posA = first_var+2;//rest
-		long long posD = first_var+3;//quotient
-		long long posB = first_var+4;
-		long long posC = first_var+5;
+		long long posB = first_var+2;
+		long long posC = first_var+3;
+
+		long long rest = comp_reg1;
+		long long quot = comp_reg2;
 		
 
 
 		Inst_list instrs={
 			{Inst::LOAD, inA},
-			{Inst::STORE, posA},
+			{Inst::STORE, rest},
 			{Inst::JZERO, div0a},
 			{Inst::LOAD, inB},
 			{Inst::JZERO, div0b},
@@ -183,7 +188,7 @@ class Program{
 			{Inst::STORE, posC},
 			{Inst::LABEL, shloop},
 			{Inst::LOAD, posB},
-			{Inst::SUB, posA},
+			{Inst::SUB, rest},
 			{Inst::JPOS, shldone},
 			{Inst::LOAD, posB},
 			{Inst::ADD, 0},
@@ -196,7 +201,7 @@ class Program{
 			{Inst::LOAD, posC},
 			{Inst::JZERO, ezcase},
 			{Inst::SET, 0},
-			{Inst::STORE, posD},
+			{Inst::STORE, quot},
 			{Inst::LABEL, loop},
 			{Inst::LOAD, posB},
 			{Inst::HALF, posB},
@@ -204,29 +209,29 @@ class Program{
 			{Inst::LOAD, posC},
 			{Inst::SUB, one_reg},
 			{Inst::STORE, posC},
-			{Inst::LOAD, posD},
+			{Inst::LOAD, quot},
 			{Inst::ADD, 0},
-			{Inst::STORE, posD},
+			{Inst::STORE, quot},
 			{Inst::LOAD, posB},
-			{Inst::SUB, posA},
+			{Inst::SUB, rest},
 			{Inst::JPOS, endif},
-			{Inst::LOAD, posA},
+			{Inst::LOAD, rest},
 			{Inst::SUB, posB},
-			{Inst::STORE, posA},
-			{Inst::LOAD, posD},
+			{Inst::STORE, rest},
+			{Inst::LOAD, quot},
 			{Inst::ADD, one_reg},
-			{Inst::STORE, posD},
+			{Inst::STORE, quot},
 			{Inst::LABEL, endif},
 			{Inst::LOAD, posC},
 			{Inst::JZERO, end},
 			{Inst::JUMP, loop},
 			{Inst::LABEL, div0b},
 
-			{Inst::STORE, posA},
+			{Inst::STORE, rest},
 			{Inst::LABEL, div0a},
 			{Inst::LABEL, ezcase},
 
-			{Inst::STORE, posD},
+			{Inst::STORE, quot},
 			{Inst::LABEL, end}
 			// {Inst::LOAD, posD},
 			// {Inst::STORE, outQuot},
@@ -237,8 +242,6 @@ class Program{
 		name_procedure("/");
 		reference("x");
 		reference("y");
-		reference("r");
-		reference("q");	
 		var("b");
 		var("c");
 		def_procedure();
@@ -299,8 +302,7 @@ class Program{
 			try{
 				posret = current_proc.table.at(id);
 			}catch(out_of_range &e){
-				cerr << "Zmienna o nazwie " << id << "nie istnieje." << endl;
-				exit(-3);
+				throw logic_error("Zmienna o nazwie " + id + "nie istnieje.");
 			}
 			if(last_op == NOP){
 				Value val = current_values.front();
@@ -326,8 +328,6 @@ class Program{
 				// cout<<first.val<<" "<<oper<<" "<<second.val<<endl;
 
 				long long pos;
-
-				
 
 				switch (oper){
 					case ADD:
@@ -384,9 +384,10 @@ class Program{
 							if(second.is_ref){
 								current_values.push(first);
 								current_values.push(second);
-								current_values.push(Value{posret,true});
-								param_num=3;
+								param_num=2;
 								current_insts.push_back(Cell{Inst::CALL,create_call("*")});
+								current_insts.push_back(Cell{Inst::STORE,posret});
+
 							}else{
 								if(second.val == 0){
 									current_insts.push_back(Cell{Inst::SET,0});
@@ -402,9 +403,9 @@ class Program{
 									current_insts.push_back(Cell{Inst::SET,second.val});
 									current_insts.push_back(Cell{Inst::STORE,expr_reg2});
 									current_values.push(Value{expr_reg2,true});
-									current_values.push(Value{posret,true});
-									param_num=3;
+									param_num=2;
 									current_insts.push_back(Cell{Inst::CALL,create_call("*")});
+									current_insts.push_back(Cell{Inst::STORE,posret});
 								}
 							}
 						}else{
@@ -423,9 +424,9 @@ class Program{
 									current_insts.push_back(Cell{Inst::STORE,expr_reg1});
 									current_values.push(Value{expr_reg1,true});
 									current_values.push(second);
-									current_values.push(Value{posret,true});
-									param_num=3;
+									param_num=2;
 									current_insts.push_back(Cell{Inst::CALL,create_call("*")});
+									current_insts.push_back(Cell{Inst::STORE,posret});
 								}
 							}else{
 								current_insts.push_back(Cell{Inst::SET,first.val});
@@ -434,9 +435,9 @@ class Program{
 								current_insts.push_back(Cell{Inst::SET,second.val});
 								current_insts.push_back(Cell{Inst::STORE,expr_reg2});
 								current_values.push(Value{expr_reg2,true});
-								current_values.push(Value{posret,true});
-								param_num=3;
+								param_num=2;
 								current_insts.push_back(Cell{Inst::CALL,create_call("*")});
+								current_insts.push_back(Cell{Inst::STORE,posret});
 							}
 						}
 					break;
@@ -446,15 +447,14 @@ class Program{
 							if(second.is_ref){
 								current_values.push(first);
 								current_values.push(second);
-								if(oper == DIV){
-									current_values.push(Value{comp_reg1,true});
-									current_values.push(Value{posret,true});
-								}else{
-									current_values.push(Value{posret,true});
-									current_values.push(Value{comp_reg1,true});
-								}
-								param_num=4;
+								param_num=2;
 								current_insts.push_back(Cell{Inst::CALL,create_call("/")});
+								if(oper == DIV){
+									current_insts.push_back(Cell{Inst::LOAD,comp_reg2});
+								}else{
+									current_insts.push_back(Cell{Inst::LOAD,comp_reg1});
+								}
+								current_insts.push_back(Cell{Inst::STORE,posret});
 							}else{
 								if(oper == DIV && second.val == 2){
 									current_insts.push_back(Cell{Inst::LOAD,first.val});
@@ -465,15 +465,14 @@ class Program{
 									current_insts.push_back(Cell{Inst::SET,second.val});
 									current_insts.push_back(Cell{Inst::STORE,expr_reg1});
 									current_values.push(Value{expr_reg1,true});
-									if(oper == DIV){
-										current_values.push(Value{comp_reg1,true});
-										current_values.push(Value{posret,true});
-									}else{
-										current_values.push(Value{posret,true});
-										current_values.push(Value{comp_reg1,true});
-									}
-									param_num=4;
+									param_num=2;
 									current_insts.push_back(Cell{Inst::CALL,create_call("/")});
+									if(oper == DIV){
+										current_insts.push_back(Cell{Inst::LOAD,comp_reg2});
+									}else{
+										current_insts.push_back(Cell{Inst::LOAD,comp_reg1});
+									}
+									current_insts.push_back(Cell{Inst::STORE,posret});
 								}
 							}
 						}else{
@@ -498,15 +497,14 @@ class Program{
 								current_insts.push_back(Cell{Inst::SET,second.val});
 								current_insts.push_back(Cell{Inst::STORE,expr_reg2});
 								current_values.push(Value{expr_reg2,true});
-								if(oper == DIV){
-									current_values.push(Value{comp_reg1,true});
-									current_values.push(Value{posret,true});
-								}else{
-									current_values.push(Value{posret,true});
-									current_values.push(Value{comp_reg1,true});
-								}
-								param_num=4;
+								param_num=2;
 								current_insts.push_back(Cell{Inst::CALL,create_call("/")});
+								if(oper == DIV){
+									current_insts.push_back(Cell{Inst::LOAD,comp_reg2});
+								}else{
+									current_insts.push_back(Cell{Inst::LOAD,comp_reg1});
+								}
+								current_insts.push_back(Cell{Inst::STORE,posret});
 							}
 						}
 					break;
@@ -523,8 +521,7 @@ class Program{
 			try{
 				pos = current_proc.table.at(id);
 			}catch(out_of_range &e){
-				cerr << "Zmienna o nazwie " << id << "nie istnieje." << endl;
-				exit(-3);
+				throw logic_error("Zmienna o nazwie " + id + "nie istnieje.");
 			}
 			current_insts.push_back(Cell{Inst::GET,pos});
 		}
@@ -546,8 +543,7 @@ class Program{
 
 		void var(string id ){
 			if(current_proc.table.find(string(id)) != current_proc.table.end()){
-				cerr << "Zmienna o nazwie " << id << " już istnieje." << endl;
-				exit(-3);
+				throw logic_error("Zmienna o nazwie " + id + " już istnieje.");
 				
 			}
 			current_proc.table[id] = last_var_field;
@@ -568,8 +564,7 @@ class Program{
 			try{
 				pn = procs.at(name);
 			}catch(out_of_range &e){
-				cerr << "Procedura " << name << " nie istnieje." << endl;
-				exit(-3);
+				throw logic_error("Procedura " + name + " nie istnieje.");
 			}
 
 
@@ -578,11 +573,9 @@ class Program{
 			call.proc = name;
 
 			if(param_num<pn.bindings){
-				cerr << "Podano za mało argumentów do procedury "<<name<<"."<<endl;
-				exit(-4);
+				throw logic_error("Podano za mało argumentów do procedury " + name + ".");
 			}else if(param_num>pn.bindings){
-				cerr << "Podano za dużo argumentów do procedury "<<name<<"."<<endl;
-				exit(-4);
+				throw logic_error("Podano za dużo argumentów do procedury " + name + ".");
 			}
 
 
@@ -869,8 +862,7 @@ class Program{
 			try{
 				pos = current_proc.table.at(id);
 			}catch(out_of_range &e){
-				cerr << "Zmienna " << id << " nie istnieje." << endl;
-				exit(-3);
+				throw logic_error("Zmienna " + id + " nie istnieje.");
 			}
 			// cout<<"Var: "<<pos<<endl;
 			current_values.push(Value{pos,true});
@@ -971,6 +963,7 @@ class Program{
 					for(unsigned int j=0;j<call.args.size();j++){
 						if(!call.args[j].is_ref){
 							cerr<<"Nie można przekazać stałej do funkcji."<<endl;
+							// throw logic_error();
 							// call_list.push_back(Cell{Inst::SET,call.args[j].val});
 						}
 						Procedure &from_proc = procs[call.from_proc];
@@ -1134,3 +1127,5 @@ class Program{
 		}
 
 };
+
+#endif

@@ -1570,5 +1570,10 @@ void run_parser( Program & program, FILE * data )
     yydebug = 1;
   #endif
   yyset_in( data );
-  yyparse( program );
+  try{
+    yyparse( program );
+  }catch(std::logic_error &e){
+    std::cerr<<"Błąd na lini "<<yylineno<<" "<<e.what()<<std::endl;
+    exit(-1);
+  }
 }
