@@ -96,7 +96,7 @@ class Program{
 		int load = new_label();
 		int end = new_label();
 		int justa = new_label();
-		int last_add = new_label();
+		int set_zero = new_label();
 
 		long long inA = first_var;
 		long long inB = first_var+1;
@@ -104,28 +104,30 @@ class Program{
 		long long posA = first_var+3;
 		long long posB = first_var+4;
 		long long posD = first_var+5;
+		long long posE = first_var+6;
 
 		Inst_list instrs = {
-			{Inst::SET,0},
-			{Inst::STORE,posC}, 
 			{Inst::LOAD,inA},
-			{Inst::JZERO,end},
+			{Inst::JZERO,set_zero},
 			{Inst::STORE,posA},
 			{Inst::LOAD,inB},
-			{Inst::JZERO,end},
+			{Inst::JZERO,set_zero},
 			{Inst::STORE,posB},
+			{Inst::SET,0},
+			{Inst::STORE,posC},
 			{Inst::LABEL,load},
+
 			{Inst::LOAD,posB},
-			{Inst::SUB,one_reg},
-			{Inst::JZERO,last_add},
-			{Inst::HALF,1},
-			{Inst::STORE,posD},
-			{Inst::LOAD,posB},
-			{Inst::HALF,1},
 			{Inst::JZERO,end},
+			{Inst::STORE,posD},
+			{Inst::HALF,1},
 			{Inst::STORE,posB},
-			{Inst::SUB,posD},
-			{Inst::JPOS,justa},
+			{Inst::ADD,0},
+			{Inst::STORE,posE},
+			{Inst::LOAD,posD},
+			{Inst::SUB,posE},
+			{Inst::JZERO,justa},
+
 			{Inst::LOAD,posA},
 			{Inst::ADD,posC},
 			{Inst::STORE,posC},
@@ -134,9 +136,7 @@ class Program{
 			{Inst::ADD,posA}, 
 			{Inst::STORE,posA},
 			{Inst::JUMP,load},
-			{Inst::LABEL,last_add},
-			{Inst::LOAD,posA},
-			{Inst::ADD,posC},
+			{Inst::LABEL,set_zero},
 			{Inst::STORE,posC},
 			{Inst::LABEL,end}
 		};
@@ -148,6 +148,7 @@ class Program{
 		var("a");
 		var("b");
 		var("d");
+		var("e");
 		def_procedure();
 
 	}
@@ -164,8 +165,8 @@ class Program{
 
 		long long inA = first_var;
 		long long inB = first_var+1;
-		long long posA = first_var+2;
-		long long posD = first_var+3;
+		long long posA = first_var+2;//rest
+		long long posD = first_var+3;//quotient
 		long long posB = first_var+4;
 		long long posC = first_var+5;
 		
@@ -173,8 +174,8 @@ class Program{
 
 		Inst_list instrs={
 			{Inst::LOAD, inA},
-			{Inst::JZERO, div0a},
 			{Inst::STORE, posA},
+			{Inst::JZERO, div0a},
 			{Inst::LOAD, inB},
 			{Inst::JZERO, div0b},
 			{Inst::STORE, posB},
@@ -220,11 +221,11 @@ class Program{
 			{Inst::JZERO, end},
 			{Inst::JUMP, loop},
 			{Inst::LABEL, div0b},
-			{Inst::SET, 0},
+
 			{Inst::STORE, posA},
 			{Inst::LABEL, div0a},
 			{Inst::LABEL, ezcase},
-			{Inst::SET, 0},
+
 			{Inst::STORE, posD},
 			{Inst::LABEL, end}
 			// {Inst::LOAD, posD},
@@ -606,21 +607,7 @@ class Program{
 
 			// cout<<first.val<<" "<<compr<<" "<<second.val<<endl;
 			Inst_list comp_insts;
-			if(first.is_ref){
-				posA = first.val;
-			}else{
-				posA=comp_reg1;
-				current_insts.push_back(Cell{Inst::SET,first.val});
-				current_insts.push_back(Cell{Inst::STORE,comp_reg1});
-			}
 
-			if(second.is_ref){
-				posB = second.val;
-			}else{
-				posB=comp_reg2;
-				current_insts.push_back(Cell{Inst::SET,second.val});
-				current_insts.push_back(Cell{Inst::STORE,comp_reg2});
-			}
 
 			// if(ctrl == Ctrl::WHILE){
 			// 	switch (compr){
@@ -644,59 +631,185 @@ class Program{
 			// 		break;
 			// 	}
 			// }
-			
-			switch (compr){
-				case EQ:
-					comp_insts = {
-						{Inst::LOAD, posA},
-						{Inst::SUB, posB},
-						{Inst::JPOS, fail_pos},
-						{Inst::LOAD, posB},
-						{Inst::SUB, posA},
-						{Inst::JPOS, fail_pos}
-					};
-				break;
-				case GT:
-					comp_insts = {
-						{Inst::LOAD,posA},
-						{Inst::SUB,posB},
-						{Inst::JZERO,fail_pos}
+
+			enum Type { consts, zero, normal };
+			Type t;
+			if(first.val != second.val || first.is_ref != second.is_ref){
+				if(first.is_ref){
+					posA = first.val;
+				}else{
+					if(first.val == 0){
+						posA = 0;
+					}else{
+						posA=comp_reg1;
+						current_insts.push_back(Cell{Inst::SET,first.val});
+						current_insts.push_back(Cell{Inst::STORE,comp_reg1});	
+					}
+
+				}
+
+				if(second.is_ref){
+					posB = second.val;
+				}else{
+					if(second.val == 0){
+						posB = 0;
+					}else{
+						posB=comp_reg2;
+						current_insts.push_back(Cell{Inst::SET,second.val});
+						current_insts.push_back(Cell{Inst::STORE,comp_reg2});
+					}
+
+				}
+			}else{
+				posA = first.val;
+				posB = second.val;
+			}
+
+			if(posA == posB){
+				switch (compr){
+					case EQ:
+						comp_insts = {
+
 						};
-				break;
-				case LT:
-					comp_insts = {
-						{Inst::LOAD,posB},
-						{Inst::SUB,posA},
-						{Inst::JZERO,fail_pos}
+					break;
+					case GT:
+						comp_insts = {
+							{Inst::JZERO,fail_pos}
+							};
+					break;
+					case LT:
+						comp_insts = {
+							{Inst::JZERO,fail_pos}
+							};
+					break;
+					case GTE:
+						comp_insts = {
+
+							};
+					break;
+					case LTE:	
+						comp_insts = {
+
+							};
+					break;
+					case NEQ:
+						comp_insts = {
+							{Inst::JZERO, fail_pos}
 						};
-				break;
-				case GTE:
-					comp_insts = {
-						{Inst::LOAD,posB},
-						{Inst::SUB,posA},
-						{Inst::JPOS, fail_pos}
+					break;
+				}
+			}else if(posA == 0 || posB == 0){
+				if(posA == 0){
+					switch (compr){
+						case GT:
+							compr = LT;
+						break;
+						case LT:
+							compr = GT;
+						break;
+						case GTE:
+							compr = LTE;
+						break;
+						case LTE:	
+							compr = GTE;
+						break;
+					}
+					posA = posB;
+					posB = 0;
+
+				}
+
+				switch (compr){
+					case EQ:
+						comp_insts = {
+							{Inst::LOAD, posA},
+							{Inst::JPOS, fail_pos}
 						};
-				break;
-				case LTE:	
-					comp_insts = {
-						{Inst::LOAD,posA},
-						{Inst::SUB,posB},
-						{Inst::JPOS, fail_pos}
+					break;
+					case GT:
+						comp_insts = {
+							{Inst::LOAD,posA},
+							{Inst::JZERO,fail_pos}
+							};
+					break;
+					case LT:
+						comp_insts = {
+							{Inst::JZERO,fail_pos}
+							};
+					break;
+					case GTE:
+						comp_insts = {
+
+							};
+					break;
+					case LTE:	
+						comp_insts = {
+							{Inst::LOAD,posA},
+							{Inst::JPOS, fail_pos}
+							};
+					break;
+					case NEQ:
+						comp_insts = {
+							{Inst::LOAD, posA},
+							{Inst::JZERO, fail_pos}
 						};
-				break;
-				case NEQ:
-				int if_label = new_label();
-				comp_insts = {
-					{Inst::LOAD, posA},
-					{Inst::SUB, posB},
-					{Inst::JPOS, if_label},
-					{Inst::LOAD, posB},
-					{Inst::SUB, posA},
-					{Inst::JPOS, if_label},
-					{Inst::JUMP, fail_pos},
-					{Inst::LABEL, if_label}
-				};
-				break;// eq 0 optimisation
+					break;
+				}
+			}else{
+
+				switch (compr){
+					case EQ:
+						comp_insts = {
+							{Inst::LOAD, posA},
+							{Inst::SUB, posB},
+							{Inst::JPOS, fail_pos},
+							{Inst::LOAD, posB},
+							{Inst::SUB, posA},
+							{Inst::JPOS, fail_pos}
+						};
+					break;
+					case GT:
+						comp_insts = {
+							{Inst::LOAD,posA},
+							{Inst::SUB,posB},
+							{Inst::JZERO,fail_pos}
+							};
+					break;
+					case LT:
+						comp_insts = {
+							{Inst::LOAD,posB},
+							{Inst::SUB,posA},
+							{Inst::JZERO,fail_pos}
+							};
+					break;
+					case GTE:
+						comp_insts = {
+							{Inst::LOAD,posB},
+							{Inst::SUB,posA},
+							{Inst::JPOS, fail_pos}
+							};
+					break;
+					case LTE:	
+						comp_insts = {
+							{Inst::LOAD,posA},
+							{Inst::SUB,posB},
+							{Inst::JPOS, fail_pos}
+							};
+					break;
+					case NEQ:
+						int if_label = new_label();
+						comp_insts = {
+							{Inst::LOAD, posA},
+							{Inst::SUB, posB},
+							{Inst::JPOS, if_label},
+							{Inst::LOAD, posB},
+							{Inst::SUB, posA},
+							{Inst::JPOS, if_label},
+							{Inst::JUMP, fail_pos},
+							{Inst::LABEL, if_label}
+						};
+					break;
+				}
 			}
 
 			current_insts.insert(current_insts.end(),comp_insts.begin(),comp_insts.end());
@@ -774,12 +887,13 @@ class Program{
 							if(proc.insts[j].val<first_var+proc.bindings && proc.insts[j].val>=first_var){
 								switch(proc.insts[j].inst){
 									case Inst::GET:
-										proc.insts.insert(proc.insts.begin()+j,Cell{Inst::STORE,proc.insts[j].val});
+										proc.insts.insert(proc.insts.begin()+j+1,Cell{Inst::STORE,proc.insts[j].val});
 										proc.insts[j].val = 0;
 										break;
 									case Inst::PUT:
-										proc.insts.insert(proc.insts.begin()+j-1,Cell{Inst::LOADI,proc.insts[j].val});
-										proc.insts[j+1].val = 0;
+										proc.insts.insert(proc.insts.begin()+j,Cell{Inst::LOADI,proc.insts[j].val});
+										j++;
+										proc.insts[j].val = 0;
 										break;
 									case Inst::LOAD:
 										proc.insts[j].inst = Inst::LOADI;
@@ -796,7 +910,6 @@ class Program{
 								}
 							}
 						}
-
 						for(unsigned int j=0;j<proc.insts.size();j++){
 							switch(proc.insts[j].inst){
 								case Inst::GET:
@@ -837,7 +950,6 @@ class Program{
 						proc.insts.push_back(Cell{Inst::JUMPI,proc.retadr});
 						out_list.insert(out_list.end(),proc.insts.begin(),proc.insts.end());
 					}
-					
 					Inst_list call_list;
 					for(unsigned int j=0;j<call.args.size();j++){
 						if(!call.args[j].is_ref){

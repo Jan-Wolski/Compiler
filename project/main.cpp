@@ -18,6 +18,9 @@ int main(int argc, char* argv[]){
 		infile = stdin;
 	}else{
 		infile = fopen(argv[1],"r");
+		if(infile == NULL){
+			std::cerr<<"Nie można otworzyć pliku wejściowego."<<std::endl;
+		}
 	}
 
 	if(argc<3){

@@ -9,12 +9,18 @@ VAR
     n, m
 BEGIN
     a := 4294967297;
+    WRITE a;
     b := 4294967298;
+    WRITE b;
     c := 4294967299;
+    WRITE c;
     d := 4294967300;
+    WRITE d;
 
     n := a * b;
+    WRITE n;
     n := n * c;
+    WRITE n;
     n := n * d;
     WRITE n;
 
