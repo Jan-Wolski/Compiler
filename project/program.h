@@ -44,11 +44,13 @@ struct Procedure{
 	
 	Var_table table;
 	unsigned int bindings=0;
-	int padding=0;
+	unsigned int padding=0;
 	int retadr=0;
 
 	int label = -1;
-	bool always_embed = false;
+	bool embed = false;
+	unsigned int calls = 0;
+	unsigned int inst_count = 0;
 };
 
 struct Proc_call{
@@ -77,6 +79,7 @@ class Program{
 
 		Inst_list out_list;
 		
+		vector<string> procs_order;
 		map<string,Procedure> procs;
 		vector<Proc_call> calls;
 		int labels_id = 0;
@@ -97,7 +100,7 @@ class Program{
 		int load = new_label();
 		int end = new_label();
 		int justa = new_label();
-		int set_zero = new_label();
+		// int set_zero = new_label();
 
 		long long inA = first_var;
 		long long inB = first_var+1;
@@ -282,6 +285,7 @@ class Program{
 			// current_proc.label = new_label();
 			current_proc.insts = last_insts;
 			procs[current_proc.name] = current_proc;
+			procs_order.push_back(current_proc.name);
 			reset_procedure();
 		}
 
@@ -292,7 +296,7 @@ class Program{
 		}
 
 		void def_main(){
-			name_procedure("main");
+			name_procedure("-main");
 			def_procedure();
 		}
 
@@ -585,6 +589,8 @@ class Program{
 				param_num--;
 			}
 
+			procs[name].calls++;
+
 
 			calls.push_back(call);
 			return calls.size()-1;
@@ -609,7 +615,7 @@ class Program{
 			comp_values.pop();
 
 			long long fail_pos = new_label();
-			long long success_pos = new_label();
+			// long long success_pos = new_label();
 			long long posA, posB;
 
 			Comparisons compr = comp_stack.top();
@@ -847,7 +853,7 @@ class Program{
 					current_insts.push_back(Cell{Inst::LABEL,fail_pos});
 				break;}
 				case Ctrl::UNTIL:{
-					int loop = new_label();
+					// int loop = new_label();
 					last_insts.insert(last_insts.end(),current_insts.begin(),current_insts.end());
 					current_insts = last_insts;
 					current_insts.insert(current_insts.begin(),Cell{Inst::LABEL,fail_pos});
@@ -878,116 +884,220 @@ class Program{
 		}
 
 		void finish(){
-			out_list = procs["main"].insts;
+			out_list = procs["-main"].insts;
 			out_list.push_back(Cell{Inst::HALT,1});
-			int padding = procs["main"].table.size();
+			int padding = procs["-main"].table.size();
 			int procedures = false;
 			// save("beforeFinish.mr");
+
+
+
+			for(unsigned int i=0;i<procs_order.size()-1;i++){
+				int inst_count = 0;
+				if(procs_order[i] == "-main"){
+					break;
+				}
+				Procedure &proc = procs[procs_order[i]];
+				for(unsigned int j=0;j<proc.insts.size();j++){
+					if(proc.insts[j].inst == Inst::CALL){
+						Proc_call &c = calls[proc.insts[j].val];
+						if(procs[c.proc].embed){
+							inst_count+=procs[c.proc].inst_count;
+						}else{
+							inst_count+=(c.args.size()+1)*2;
+						}
+					}else if(proc.insts[j].inst != Inst::LABEL){
+						inst_count++;
+					}
+				}
+				if(inst_count*proc.calls<=inst_count + 1 + (proc.calls*2*(proc.bindings+1))){
+					proc.embed = true;
+				}
+				proc.inst_count = inst_count;
+			}
 
 
 			//call functions
 			for(unsigned int i=0;i<out_list.size();i++){
 				if(out_list[i].inst == Inst::CALL){
-					Proc_call call = calls[out_list[i].val];
+					const Proc_call &call = calls[out_list[i].val];
 					Procedure &proc = procs[call.proc];
-					if(proc.label == -1){
-						proc.label = new_label();
-						for(unsigned int j=0;j<proc.insts.size();j++){
-							if(proc.insts[j].val<first_var+proc.bindings && proc.insts[j].val>=first_var){
-								switch(proc.insts[j].inst){
+					if(proc.embed){
+							Inst_list insts = proc.insts;
+							map<int, int> new_labels;
+							for(unsigned int j=0;j<insts.size();j++){
+								switch(insts[j].inst){
 									case Inst::GET:
-										proc.insts.insert(proc.insts.begin()+j+1,Cell{Inst::STORE,proc.insts[j].val});
-										proc.insts[j].val = 0;
-										break;
 									case Inst::PUT:
-										proc.insts.insert(proc.insts.begin()+j,Cell{Inst::LOADI,proc.insts[j].val});
-										j++;
-										proc.insts[j].val = 0;
-										break;
 									case Inst::LOAD:
-										proc.insts[j].inst = Inst::LOADI;
-										break;
 									case Inst::STORE:
-										proc.insts[j].inst = Inst::STOREI;
-										break;
+									case Inst::LOADI:
+									case Inst::STOREI:
 									case Inst::ADD:
-										proc.insts[j].inst = Inst::ADDI;
-										break;
 									case Inst::SUB:
-										proc.insts[j].inst = Inst::SUBI;
-										break;
+									case Inst::ADDI:
+									case Inst::SUBI:
+									case Inst::SET:
+									case Inst::JUMPI:
+										if(insts[j].val>=first_var+proc.bindings){
+											insts[j].val = insts[j].val + padding - proc.bindings;
+										}else if(insts[j].val>=first_var){
+											insts[j].val = call.args[insts[j].val-first_var].val;
+										}
+									break;
+									case Inst::JUMP:
+									case Inst::JZERO:
+									case Inst::JPOS:
+									case Inst::LABEL:
+										if(new_labels.find(insts[j].val) == new_labels.end()){
+											new_labels[insts[j].val] = new_label();
+										}
+										insts[j].val = new_labels[insts[j].val];
+									break;
+									case Inst::CALL:
+										Proc_call &icall = calls[insts[j].val];
+										icall.from_proc = call.from_proc;
+										for(int k = 0;k<icall.args.size();k++){
+											if(icall.args[k].val>=first_var+proc.bindings){
+												icall.args[k].val = icall.args[k].val + padding - proc.bindings;
+											}else if(icall.args[k].val>=first_var){
+												icall.args[k] = call.args[icall.args[k].val-first_var];
+											}
+										}
 								}
 							}
-						}
-						for(unsigned int j=0;j<proc.insts.size();j++){
-							switch(proc.insts[j].inst){
-								case Inst::GET:
-								case Inst::PUT:
-								case Inst::LOAD:
-								case Inst::STORE:
-								case Inst::LOADI:
-								case Inst::STOREI:
-								case Inst::ADD:
-								case Inst::SUB:
-								case Inst::ADDI:
-								case Inst::SUBI:
-								case Inst::SET:
-								// case Inst::HALF:
-								// case Inst::JUMP:
-								// case Inst::JPOS:
-								// case Inst::JZERO:
-								case Inst::JUMPI:
-								// case Inst::HALT:
-								if(proc.insts[j].val>=first_var){
-									proc.insts[j].val = proc.insts[j].val + padding;
-								}
-								break;
-								case Inst::CALL:
-									Proc_call &icall = calls[proc.insts[j].val];
-									icall.from_proc = proc.name;
-									for(int k = 0;k<icall.args.size();k++){
-										if(icall.args[k].val>=first_var){
-											icall.args[k].val = icall.args[k].val + padding;
+							if(procedures){
+								const Procedure &from_proc = procs[call.from_proc];
+								for(unsigned int j=0;j<insts.size();j++){
+									if(insts[j].val<first_var+from_proc.bindings+from_proc.padding && insts[j].val>=first_var+from_proc.padding){
+										switch(insts[j].inst){
+											case Inst::GET:
+												insts.insert(insts.begin()+j+1,Cell{Inst::STORE,insts[j].val});
+												insts[j].val = 0;
+												break;
+											case Inst::PUT:
+												insts.insert(insts.begin()+j,Cell{Inst::LOADI,insts[j].val});
+												j++;
+												insts[j].val = 0;
+												break;
+											case Inst::LOAD:
+												insts[j].inst = Inst::LOADI;
+												break;
+											case Inst::STORE:
+												insts[j].inst = Inst::STOREI;
+												break;
+											case Inst::ADD:
+												insts[j].inst = Inst::ADDI;
+												break;
+											case Inst::SUB:
+												insts[j].inst = Inst::SUBI;
+												break;
 										}
 									}
+								}
 							}
+							padding += proc.table.size() - proc.bindings;
+							out_list.erase(out_list.begin()+i);
+							out_list.insert(out_list.begin()+i,insts.begin(),insts.end());
+							i--;
+					}else{
+						if(proc.label == -1){
+							proc.label = new_label();
+							for(unsigned int j=0;j<proc.insts.size();j++){
+								if(proc.insts[j].val<first_var+proc.bindings && proc.insts[j].val>=first_var){
+									switch(proc.insts[j].inst){
+										case Inst::GET:
+											proc.insts.insert(proc.insts.begin()+j+1,Cell{Inst::STORE,proc.insts[j].val});
+											proc.insts[j].val = 0;
+											break;
+										case Inst::PUT:
+											proc.insts.insert(proc.insts.begin()+j,Cell{Inst::LOADI,proc.insts[j].val});
+											j++;
+											proc.insts[j].val = 0;
+											break;
+										case Inst::LOAD:
+											proc.insts[j].inst = Inst::LOADI;
+											break;
+										case Inst::STORE:
+											proc.insts[j].inst = Inst::STOREI;
+											break;
+										case Inst::ADD:
+											proc.insts[j].inst = Inst::ADDI;
+											break;
+										case Inst::SUB:
+											proc.insts[j].inst = Inst::SUBI;
+											break;
+									}
+								}
+							}
+							for(unsigned int j=0;j<proc.insts.size();j++){
+								switch(proc.insts[j].inst){
+									case Inst::GET:
+									case Inst::PUT:
+									case Inst::LOAD:
+									case Inst::STORE:
+									case Inst::LOADI:
+									case Inst::STOREI:
+									case Inst::ADD:
+									case Inst::SUB:
+									case Inst::ADDI:
+									case Inst::SUBI:
+									case Inst::SET:
+									// case Inst::HALF:
+									// case Inst::JUMP:
+									// case Inst::JPOS:
+									// case Inst::JZERO:
+									case Inst::JUMPI:
+									// case Inst::HALT:
+									if(proc.insts[j].val>=first_var){
+										proc.insts[j].val = proc.insts[j].val + padding;
+									}
+									break;
+									case Inst::CALL:
+										Proc_call &icall = calls[proc.insts[j].val];
+										icall.from_proc = proc.name;
+										for(int k = 0;k<icall.args.size();k++){
+											if(icall.args[k].val>=first_var){
+												icall.args[k].val = icall.args[k].val + padding;
+											}
+										}
+								}
+							}
+							proc.padding = padding;
+							padding += proc.table.size() + 1;
+							proc.retadr = padding - 1 + first_var;
+							proc.insts.insert(proc.insts.begin(),Cell{Inst::LABEL,proc.label});
+							proc.insts.push_back(Cell{Inst::JUMPI,proc.retadr});
+							out_list.insert(out_list.end(),proc.insts.begin(),proc.insts.end());
 						}
-						proc.padding = padding;
-						padding += proc.table.size() + 1;
-						proc.retadr = padding - 1+ first_var;
-						proc.insts.insert(proc.insts.begin(),Cell{Inst::LABEL,proc.label});
-						proc.insts.push_back(Cell{Inst::JUMPI,proc.retadr});
-						out_list.insert(out_list.end(),proc.insts.begin(),proc.insts.end());
-					}
-					Inst_list call_list;
-					for(unsigned int j=0;j<call.args.size();j++){
-						if(!call.args[j].is_ref){
-							cerr<<"Nie można przekazać stałej do funkcji."<<endl;
-							// throw logic_error();
-							// call_list.push_back(Cell{Inst::SET,call.args[j].val});
+						Inst_list call_list;
+						for(unsigned int j=0;j<call.args.size();j++){
+							if(!call.args[j].is_ref){
+								throw logic_error("Nie można przekazać stałej do funkcji.");
+							}
+							Procedure &from_proc = procs[call.from_proc];
+							if(call.args[j].val>=from_proc.padding+from_proc.bindings+first_var || call.args[j].val<first_var){
+								call_list.push_back(Cell{Inst::SET,call.args[j].val});
+							}else{
+								call_list.push_back(Cell{Inst::LOAD,call.args[j].val});
+							}
+							call_list.push_back(Cell{Inst::STORE,proc.padding+j+first_var});
 						}
-						Procedure &from_proc = procs[call.from_proc];
-						if(call.args[j].val>=from_proc.padding+from_proc.bindings+first_var || call.args[j].val<first_var){
-							call_list.push_back(Cell{Inst::SET,call.args[j].val});
-						}else{
-							call_list.push_back(Cell{Inst::LOAD,call.args[j].val});
-						}
-						call_list.push_back(Cell{Inst::STORE,proc.padding+j+first_var});
-					}
 
-					call_list.push_back(Cell{Inst::SET,-1});
-					call_list.push_back(Cell{Inst::STORE,proc.retadr});
-					call_list.push_back(Cell{Inst::JUMP,proc.label});
-					// for(unsigned int j=0;j<call.args.size();j++){
-					// 	if(call.args[j].is_ref){
-					// 		call_list.push_back(Cell{Inst::LOAD,proc.padding+j+first_var});
-					// 	}
-					// 	call_list.push_back(Cell{Inst::STORE,call.args[j].val});
-					// }
-					out_list.erase(out_list.begin()+i);
-					out_list.insert(out_list.begin()+i,call_list.begin(),call_list.end());
+						call_list.push_back(Cell{Inst::SET,-1});
+						call_list.push_back(Cell{Inst::STORE,proc.retadr});
+						call_list.push_back(Cell{Inst::JUMP,proc.label});
+						// for(unsigned int j=0;j<call.args.size();j++){
+						// 	if(call.args[j].is_ref){
+						// 		call_list.push_back(Cell{Inst::LOAD,proc.padding+j+first_var});
+						// 	}
+						// 	call_list.push_back(Cell{Inst::STORE,call.args[j].val});
+						// }
+						out_list.erase(out_list.begin()+i);
+						out_list.insert(out_list.begin()+i,call_list.begin(),call_list.end());
 
-					i--;
+						i--;
+					}
 					
 				}else if((out_list[i].inst == Inst::LOAD || out_list[i].inst == Inst::SUB || out_list[i].inst == Inst::ADD) && out_list[i].val == one_reg && one_reg_used == false){
 					out_list.insert(out_list.begin(),Cell{Inst::SET,1});
@@ -1026,7 +1136,7 @@ class Program{
 
 			for(unsigned int i=0;i<out_list.size()-1;i++){
 				bool nope = false;
-				if(out_list[i].inst == Inst::STORE){
+				if(out_list[i].inst == Inst::STORE && (out_list[i].val >= first_var)){
 					nope = false;
 					for(unsigned int j=i+1;j<out_list.size()-1;j++){
 						if(out_list[j].inst == Inst::HALT || out_list[j].inst == Inst::JUMPI || 
@@ -1051,6 +1161,16 @@ class Program{
 					if(nope == false){
 						out_list.erase(out_list.begin()+i);
 					}
+				}
+			}
+
+			for(unsigned int i=0;i<out_list.size();i++){
+				if((out_list[i].inst == Inst::JUMP ||
+					out_list[i].inst == Inst::JZERO ||
+					out_list[i].inst == Inst::JPOS)
+					&& out_list[i+1].inst == Inst::LABEL
+					&& out_list[i].val == out_list[i+1].val){
+					out_list.erase(out_list.begin()+i);
 				}
 			}
 

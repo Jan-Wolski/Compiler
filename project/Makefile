@@ -1,4 +1,4 @@
-FLAGS = -pedantic -std=c++17 -Wall
+FLAGS = -pedantic -std=c++17
 
 .PHONY = all release debug clean 
 

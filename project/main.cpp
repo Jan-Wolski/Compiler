@@ -20,6 +20,7 @@ int main(int argc, char* argv[]){
 		infile = fopen(argv[1],"r");
 		if(infile == NULL){
 			std::cerr<<"Nie można otworzyć pliku wejściowego."<<std::endl;
+			exit(-2);
 		}
 	}
 
