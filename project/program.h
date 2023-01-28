@@ -999,6 +999,22 @@ class Program{
 			}
 
 
+			for(unsigned int i=0;i<out_list.size()-2;i++){
+				long long a = out_list[i].val;
+				if(out_list[i].inst == Inst::STORE){
+					if(out_list[i+1].inst == Inst::LOAD
+						&& out_list[i+2].inst == Inst::ADD
+						&& out_list[i+2].val == a){
+							a = out_list[i+1].val;
+							out_list.erase(out_list.begin()+i+1);
+							out_list[i+1].val = a;
+					}else if(out_list[i+1].inst == Inst::PUT && out_list[i+1].val == a){
+						out_list[i+1].val = 0;
+					}
+				}
+			}
+
+
 			for(unsigned int i=0;i<out_list.size()-1;i++){
 				if(out_list[i].val == out_list[i+1].val){
 					if((out_list[i].inst == Inst::STORE && out_list[i+1].inst == Inst::LOAD) || 
@@ -1008,22 +1024,35 @@ class Program{
 				}
 			}
 
-		// for(unsigned int i=0;i<out_list.size()-1;i++){
-		// 	bool ptr = false;
-		// 	bool nope = false;
-		// 	if(out_list[i].inst == Inst::STORE){
-		// 		nope = false;
-		// 		for(unsigned int j=i;j<out_list.size()-1;j++){
-		// 			if(out_list[i].inst == Inst::HALT || out_list[i].inst == Inst::JUMPI){
-		// 				break;
-		// 			}else if(out_list[i].){
-
-		// 			}
-
-		// 		}
-		// 	}
-
-		// }
+			for(unsigned int i=0;i<out_list.size()-1;i++){
+				bool nope = false;
+				if(out_list[i].inst == Inst::STORE){
+					nope = false;
+					for(unsigned int j=i+1;j<out_list.size()-1;j++){
+						if(out_list[j].inst == Inst::HALT || out_list[j].inst == Inst::JUMPI || 
+							(out_list[j].val == out_list[i].val && (out_list[j].inst == Inst::STORE || out_list[j].inst == Inst::GET))){
+							break;
+						}else if(out_list[j].inst == Inst::JUMP ||
+									out_list[j].inst == Inst::JZERO ||
+									out_list[j].inst == Inst::JPOS ||	
+									(
+										out_list[j].val == out_list[i].val &&
+										(
+											out_list[j].inst == Inst::LOAD ||
+											out_list[j].inst == Inst::ADD ||
+											out_list[j].inst == Inst::SUB ||
+											out_list[j].inst == Inst::PUT
+										)
+									)){
+							nope = true;
+							break;
+						}
+					}
+					if(nope == false){
+						out_list.erase(out_list.begin()+i);
+					}
+				}
+			}
 
 			//remove labels
 			vector<int> label_pos(labels_id);

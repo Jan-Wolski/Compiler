@@ -20,3 +20,6 @@ Narzędzia:
 Kompilacja:
 	make
 
+Odpalenie programu:
+	kompilator <nazwa pliku wejściowego> <nazwa pliku wyjściowego>
+

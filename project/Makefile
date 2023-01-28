@@ -1,4 +1,4 @@
-FLAGS = -pedantic -std=c++17
+FLAGS = -pedantic -std=c++17 -Wall
 
 .PHONY = all release debug clean 
 
@@ -6,7 +6,7 @@ release: kompilator
 debug: kompilator-dbg
 all: release debug
 
-kompilator: FLAGS += -g
+kompilator: FLAGS += -o2
 kompilator: parser.cc lexer.cc main.cpp program.h enums.h
 	$(CXX) $(FLAGS) $^ -o $@
 
