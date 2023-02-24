@@ -1,0 +1,7 @@
+Compilator project for Formal languages and Translation Techniques course for university.
+
+Written using C++, Bison, Flex.
+
+Compiler code can be found in project directory.
+Test programs in programs directory.
+Virtual machine for which the code is compiled in maszyna_wirtualna directory.
