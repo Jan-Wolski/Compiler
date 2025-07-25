@@ -1,4 +1,5 @@
-Compilator project for Formal languages and Translation Techniques course for university.
+Compiler project for Formal languages and Translation Techniques course for university.
+Task was to write a compiler of a virtual pascal-like language to virtual assembly-like language made for the course. Compilers later were tested and compared to each other based on how optimal code they can generate.
 
 Written using C++, Bison, Flex.
 
